@@ -1,7 +1,7 @@
 /**
  * nosette-tracking.js — Camada de tracking + envio de leads (Nosette Arquitetura)
  *
- * Injetar via <script defer src="/nosette-site/nosette-tracking.js"></script> em TODAS as páginas
+ * Injetar via <script defer src="/nosette-tracking.js"></script> em TODAS as páginas
  * HTML estáticas do export Next.js, logo antes de </body> (depois dos chunks _next/static).
  *
  * Site é um export estático Next.js com hidratação client-side — os componentes React
@@ -521,7 +521,11 @@ document.addEventListener('click', function (e) {
 var NOSETTE_TEMPO_PROJETO_OPCOES = ['0-2 meses', '2-4 meses', '4-6 meses', '6-8 meses', '8-12 meses', '+1 ano', '+2 anos'];
 
 (function () {
-  (function () {
+  var nosetteCssModalOk = false;
+  // CSS do modal só entra no DOM na 1ª abertura — zero custo pra quem nunca clica.
+  function nosetteInjetaCssModal() {
+    if (nosetteCssModalOk) return;
+    nosetteCssModalOk = true;
     var M = '#nosette-whatsapp-modal-overlay';
     var FONT_TITULO = 'var(--font-familjen-grotesk), "General Sans", var(--font-montserrat), sans-serif';
     var FONT_CORPO = '"General Sans", var(--font-montserrat), sans-serif';
@@ -531,7 +535,7 @@ var NOSETTE_TEMPO_PROJETO_OPCOES = ['0-2 meses', '2-4 meses', '4-6 meses', '6-8 
       +   'background:rgba(33,8,14,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);opacity:0;transition:opacity .25s ease;}'
       + M + '.is-open{opacity:1;}'
       + M + ' *{box-sizing:border-box;max-width:100%;}'
-      + M + ' .nw-box{position:relative;width:100%;max-width:440px;max-height:calc(100vh - 32px);overflow-y:auto;'
+      + M + ' .nw-box{position:relative;width:100%;max-width:440px;max-height:calc(100vh - 32px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;'
       +   'background:#ffeee1;color:#111;border-radius:20px;padding:36px 32px 28px;font-family:' + FONT_CORPO + ';'
       +   'box-shadow:0 30px 80px rgba(33,8,14,.35);transform:translateY(16px);transition:transform .3s ease;}'
       + M + '.is-open .nw-box{transform:none;}'
@@ -561,12 +565,9 @@ var NOSETTE_TEMPO_PROJETO_OPCOES = ['0-2 meses', '2-4 meses', '4-6 meses', '6-8 
       + M + ' .nw-enviar:disabled{opacity:.6;cursor:default;}'
       + M + ' .nw-enviar svg{width:18px;height:18px;flex:none;}'
       + M + ' .nw-privacidade{font-size:11px;color:rgba(17,17,17,.45);text-align:center;margin:12px 0 0;}'
-      + '@media (max-width:480px){' + M + ' .nw-box{padding:32px 22px 22px;border-radius:18px;}' + M + ' .nw-titulo{font-size:24px;}}'
-      /* Delay do botão flutuante (ver bloco 7). Classe própria + !important pra
-         não brigar com as regras de visibilidade que o React já aplica. */
-      + 'html:not(.nosette-wa-liberado) .whatsapp-float{opacity:0 !important;visibility:hidden !important;pointer-events:none !important;}';
+      + '@media (max-width:480px){' + M + ' .nw-box{padding:32px 22px 22px;border-radius:18px;}' + M + ' .nw-titulo{font-size:24px;}}';
     document.head.appendChild(style);
-  })();
+  }
 
   function nosetteWhatsappLink(mensagemBase) {
     var utms = nosetteGetUtms();
@@ -597,9 +598,16 @@ var NOSETTE_TEMPO_PROJETO_OPCOES = ['0-2 meses', '2-4 meses', '4-6 meses', '6-8 
 
   function nosetteCriaModalWhatsapp(hrefOriginal) {
     if (document.getElementById('nosette-whatsapp-modal-overlay')) return;
+    nosetteInjetaCssModal();
 
     var overlay = document.createElement('div');
     overlay.id = 'nosette-whatsapp-modal-overlay';
+    // Lenis (rolagem suave do site) captura a roda do mouse na página toda;
+    // data-lenis-prevent devolve a rolagem nativa pro modal.
+    overlay.setAttribute('data-lenis-prevent', '');
+    // Trava a página de fundo enquanto o modal está aberto (restaura em fecha()).
+    var overflowAnterior = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = 'hidden';
 
     var chipsHtml = NOSETTE_TEMPO_PROJETO_OPCOES.map(function (op) {
       return '<button type="button" class="nw-chip" data-valor="' + op + '">' + op + '</button>';
@@ -663,6 +671,7 @@ var NOSETTE_TEMPO_PROJETO_OPCOES = ['0-2 meses', '2-4 meses', '4-6 meses', '6-8 
     function escFecha(e) { if (e.key === 'Escape') fecha(); }
     function fecha() {
       document.removeEventListener('keydown', escFecha);
+      document.documentElement.style.overflow = overflowAnterior;
       overlay.remove();
     }
 
