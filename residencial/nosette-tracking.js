@@ -511,19 +511,60 @@ document.addEventListener('click', function (e) {
 })();
 
 /* ─────────────────────────────────────────────────────────────────────
-   6. WHATSAPP — modal de captura (nome/e-mail/telefone) antes de abrir o
-      wa.me, com envio de lead ao RD Station — replica o padrão LAN4
-      (main.js linhas ~1301-1406). Intercepta cliques em qualquer link
-      cujo href contenha "wa.me".
+   6. WHATSAPP — modal de captura (nome/e-mail/telefone + tempo do projeto
+      + metragem) antes de abrir o wa.me, com envio de lead ao RD Station —
+      replica o padrão LAN4 (main.js linhas ~1301-1406). Intercepta cliques
+      em qualquer link cujo href contenha "wa.me".
+      Visual alinhado ao form de orçamento (quote-v2): paleta vinho #63182a
+      sobre creme #ffeee1, títulos Familjen Grotesk, corpo General Sans.
    ───────────────────────────────────────────────────────────────────── */
+var NOSETTE_TEMPO_PROJETO_OPCOES = ['0-2 meses', '2-4 meses', '4-6 meses', '6-8 meses', '8-12 meses', '+1 ano', '+2 anos'];
+
 (function () {
   (function () {
+    var M = '#nosette-whatsapp-modal-overlay';
+    var FONT_TITULO = 'var(--font-familjen-grotesk), "General Sans", var(--font-montserrat), sans-serif';
+    var FONT_CORPO = '"General Sans", var(--font-montserrat), sans-serif';
     var style = document.createElement('style');
-    style.textContent = '#nosette-whatsapp-modal-overlay *{box-sizing:border-box;max-width:100%;}'
-      + '#nosette-whatsapp-form input:focus{outline:none;border-color:#B08968 !important;background:rgba(176,137,104,.08) !important;}'
-      + '#nosette-whatsapp-form input::placeholder{color:rgba(0,0,0,.4);}'
-      + '#nosette-whatsapp-enviar:hover{background:#1EBE5B;}'
-      + '#nosette-whatsapp-cancelar:hover{color:#000;}';
+    style.textContent = ''
+      + M + '{position:fixed;inset:0;z-index:10001;display:flex;align-items:center;justify-content:center;padding:16px;'
+      +   'background:rgba(33,8,14,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);opacity:0;transition:opacity .25s ease;}'
+      + M + '.is-open{opacity:1;}'
+      + M + ' *{box-sizing:border-box;max-width:100%;}'
+      + M + ' .nw-box{position:relative;width:100%;max-width:440px;max-height:calc(100vh - 32px);overflow-y:auto;'
+      +   'background:#ffeee1;color:#111;border-radius:20px;padding:36px 32px 28px;font-family:' + FONT_CORPO + ';'
+      +   'box-shadow:0 30px 80px rgba(33,8,14,.35);transform:translateY(16px);transition:transform .3s ease;}'
+      + M + '.is-open .nw-box{transform:none;}'
+      + M + ' .nw-fechar{position:absolute;top:14px;right:14px;width:36px;height:36px;border:none;background:transparent;'
+      +   'color:#63182a;font-size:22px;line-height:1;cursor:pointer;border-radius:999px;transition:background .2s;}'
+      + M + ' .nw-fechar:hover{background:rgba(99,24,42,.08);}'
+      + M + ' .nw-eyebrow{font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:#63182a;margin:0 0 10px;}'
+      + M + ' .nw-titulo{font-family:' + FONT_TITULO + ';font-size:28px;font-weight:600;line-height:1.15;color:#63182a;margin:0 0 8px;}'
+      + M + ' .nw-sub{font-size:14px;line-height:1.5;color:rgba(17,17,17,.65);margin:0 0 24px;}'
+      + M + ' .nw-campo{display:block;margin-bottom:18px;}'
+      + M + ' .nw-label{display:block;font-size:12px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:#63182a;margin-bottom:4px;}'
+      + M + ' .nw-label small{text-transform:none;letter-spacing:0;color:rgba(17,17,17,.45);font-weight:400;}'
+      + M + ' .nw-input{width:100%;font-family:' + FONT_CORPO + ';font-size:16px;color:#111;background:transparent;border:none;'
+      +   'border-bottom:1px solid rgba(99,24,42,.25);border-radius:0;padding:10px 2px;transition:border-color .25s;}'
+      + M + ' .nw-input:focus{outline:none;border-bottom-color:#63182a;}'
+      + M + ' .nw-input::placeholder{color:rgba(17,17,17,.35);}'
+      + M + ' .nw-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}'
+      + M + ' .nw-chip{font-family:' + FONT_CORPO + ';font-size:13px;font-weight:500;color:#63182a;background:transparent;'
+      +   'border:1px solid rgba(99,24,42,.3);border-radius:999px;padding:8px 14px;cursor:pointer;transition:background .2s,color .2s,border-color .2s;}'
+      + M + ' .nw-chip:hover{border-color:#63182a;}'
+      + M + ' .nw-chip.is-active{background:#63182a;border-color:#63182a;color:#fff;}'
+      + M + ' .nw-erro{color:#b3261e;font-size:12px;min-height:16px;margin:0 0 12px;}'
+      + M + ' .nw-enviar{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:16px 24px;'
+      +   'font-family:' + FONT_CORPO + ';font-size:13px;font-weight:500;letter-spacing:.03em;text-transform:uppercase;'
+      +   'color:#fff;background:#63182a;border:none;border-radius:999px;cursor:pointer;transition:opacity .25s;}'
+      + M + ' .nw-enviar:hover{opacity:.9;}'
+      + M + ' .nw-enviar:disabled{opacity:.6;cursor:default;}'
+      + M + ' .nw-enviar svg{width:18px;height:18px;flex:none;}'
+      + M + ' .nw-privacidade{font-size:11px;color:rgba(17,17,17,.45);text-align:center;margin:12px 0 0;}'
+      + '@media (max-width:480px){' + M + ' .nw-box{padding:32px 22px 22px;border-radius:18px;}' + M + ' .nw-titulo{font-size:24px;}}'
+      /* Delay do botão flutuante (ver bloco 7). Classe própria + !important pra
+         não brigar com as regras de visibilidade que o React já aplica. */
+      + 'html:not(.nosette-wa-liberado) .whatsapp-float{opacity:0 !important;visibility:hidden !important;pointer-events:none !important;}';
     document.head.appendChild(style);
   })();
 
@@ -532,6 +573,13 @@ document.addEventListener('click', function (e) {
     var msg = mensagemBase || NOSETTE_WHATSAPP_MSG_PADRAO;
     if (utms.utm_source) msg += ' (origem: ' + utms.utm_source + ')';
     return 'https://wa.me/' + NOSETTE_WHATSAPP_NUMERO + '?text=' + encodeURIComponent(msg);
+  }
+
+  function nosetteWhatsappMensagem(tempo, metragem) {
+    var msg = NOSETTE_WHATSAPP_MSG_PADRAO;
+    if (tempo) msg += ' Tempo do projeto: ' + tempo + '.';
+    if (metragem) msg += ' Metragem: ' + metragem + '.';
+    return msg;
   }
 
   /* whatsapp_click = intenção de contato (abriu o modal / seguiu pro wa.me).
@@ -545,76 +593,119 @@ document.addEventListener('click', function (e) {
     });
   }
 
+  var ICONE_WHATSAPP = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.79-1.47-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.44-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.08c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.69.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35zM12.04 21.5h-.01a9.43 9.43 0 0 1-4.8-1.32l-.35-.2-3.57.93.95-3.48-.22-.36a9.4 9.4 0 0 1-1.44-5.02c0-5.2 4.24-9.44 9.45-9.44a9.38 9.38 0 0 1 9.44 9.45c0 5.21-4.24 9.44-9.45 9.44zm8.04-17.48A11.3 11.3 0 0 0 12.04.7C5.77.7.67 5.8.67 12.06c0 2 .52 3.96 1.52 5.68L.57 23.7l6.1-1.6a11.33 11.33 0 0 0 5.37 1.37h.01c6.26 0 11.36-5.1 11.37-11.37 0-3.03-1.18-5.89-3.34-8.04z"/></svg>';
+
   function nosetteCriaModalWhatsapp(hrefOriginal) {
+    if (document.getElementById('nosette-whatsapp-modal-overlay')) return;
+
     var overlay = document.createElement('div');
     overlay.id = 'nosette-whatsapp-modal-overlay';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);'
-      + 'display:flex;align-items:center;justify-content:center;z-index:10001;'
-      + 'padding:16px;box-sizing:border-box;';
+
+    var chipsHtml = NOSETTE_TEMPO_PROJETO_OPCOES.map(function (op) {
+      return '<button type="button" class="nw-chip" data-valor="' + op + '">' + op + '</button>';
+    }).join('');
 
     var box = document.createElement('div');
-    box.style.cssText = 'background:#fff;color:#1a1a1a;border-radius:14px;padding:28px 24px;'
-      + 'width:100%;max-width:min(360px,calc(100vw - 32px));font-family:inherit;'
-      + 'border:1px solid rgba(0,0,0,.08);box-shadow:0 20px 60px rgba(0,0,0,.25);'
-      + 'box-sizing:border-box;';
+    box.className = 'nw-box';
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-modal', 'true');
+    box.setAttribute('aria-labelledby', 'nosette-whatsapp-titulo');
     box.innerHTML =
-      '<h3 style="margin:0 0 4px;font-size:19px;color:#1a1a1a;">Antes de continuar</h3>'
-      + '<p style="margin:0 0 18px;font-size:13px;color:rgba(0,0,0,.6);">Deixe seus dados pra já entrarmos em contato mesmo se a conversa cair.</p>'
+      '<button type="button" class="nw-fechar" id="nosette-whatsapp-cancelar" aria-label="Fechar">&times;</button>'
+      + '<p class="nw-eyebrow">Atendimento via WhatsApp</p>'
+      + '<h3 class="nw-titulo" id="nosette-whatsapp-titulo">Vamos conversar sobre o seu projeto</h3>'
+      + '<p class="nw-sub">Conte um pouco sobre você e o projeto — assim já chegamos à conversa preparados.</p>'
       + '<div id="nosette-whatsapp-form">'
-      + '  <input name="nome" autocomplete="name" placeholder="Nome" required style="width:100%;box-sizing:border-box;padding:11px 12px;margin-bottom:10px;border:1.5px solid rgba(0,0,0,.15);border-radius:8px;font-size:14px;background:rgba(0,0,0,.03);color:#1a1a1a;">'
-      + '  <input name="email" type="email" autocomplete="email" placeholder="Seu melhor e-mail" required style="width:100%;box-sizing:border-box;padding:11px 12px;margin-bottom:10px;border:1.5px solid rgba(0,0,0,.15);border-radius:8px;font-size:14px;background:rgba(0,0,0,.03);color:#1a1a1a;">'
-      + '  <input name="telefone" type="tel" autocomplete="tel-national" placeholder="WhatsApp com DDD (ex.: 11998765432)" required style="width:100%;box-sizing:border-box;padding:11px 12px;margin-bottom:10px;border:1.5px solid rgba(0,0,0,.15);border-radius:8px;font-size:14px;background:rgba(0,0,0,.03);color:#1a1a1a;">'
-      + '  <div id="nosette-whatsapp-erro" style="color:#c02828;font-size:12px;min-height:16px;margin-bottom:10px;"></div>'
-      + '  <button type="button" id="nosette-whatsapp-enviar" style="width:100%;padding:13px;background:#25D366;color:#fff;border:none;border-radius:999px;font-size:15px;font-weight:700;cursor:pointer;">Continuar no WhatsApp</button>'
-      + '  <button type="button" id="nosette-whatsapp-cancelar" style="width:100%;padding:9px;background:transparent;color:rgba(0,0,0,.55);border:none;font-size:13px;cursor:pointer;margin-top:6px;">Cancelar</button>'
+      + '  <label class="nw-campo"><span class="nw-label">Nome</span>'
+      + '    <input class="nw-input" name="nome" autocomplete="name" placeholder="Seu nome completo" required></label>'
+      + '  <label class="nw-campo"><span class="nw-label">E-mail</span>'
+      + '    <input class="nw-input" name="email" type="email" autocomplete="email" placeholder="seu@email.com" required></label>'
+      + '  <label class="nw-campo"><span class="nw-label">WhatsApp</span>'
+      + '    <input class="nw-input" name="telefone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="(11) 99876-5432" required></label>'
+      + '  <div class="nw-campo"><span class="nw-label">Tempo do projeto</span>'
+      + '    <div class="nw-chips" role="radiogroup" aria-label="Tempo do projeto">' + chipsHtml + '</div></div>'
+      + '  <label class="nw-campo"><span class="nw-label">Metragem</span>'
+      + '    <input class="nw-input" name="metragem" type="text" placeholder="Ex: 120m²" required></label>'
+      + '  <p class="nw-erro" id="nosette-whatsapp-erro" role="alert"></p>'
+      + '  <button type="button" class="nw-enviar" id="nosette-whatsapp-enviar">' + ICONE_WHATSAPP + '<span>Continuar no WhatsApp</span></button>'
+      + '  <p class="nw-privacidade">Seus dados ficam só com a Nosette.</p>'
       + '</div>';
 
     overlay.appendChild(box);
     document.body.appendChild(overlay);
+    requestAnimationFrame(function () { overlay.classList.add('is-open'); });
 
     var erroEl = box.querySelector('#nosette-whatsapp-erro');
     var enviarBtn = box.querySelector('#nosette-whatsapp-enviar');
+    var enviarTxt = enviarBtn.querySelector('span');
     var cancelarBtn = box.querySelector('#nosette-whatsapp-cancelar');
     var nomeInput = box.querySelector('[name="nome"]');
     var emailInput = box.querySelector('[name="email"]');
     var telInput = box.querySelector('[name="telefone"]');
+    var metragemInput = box.querySelector('[name="metragem"]');
+    var tempoSelecionado = '';
 
+    box.querySelectorAll('.nw-chip').forEach(function (chip) {
+      chip.setAttribute('role', 'radio');
+      chip.setAttribute('aria-checked', 'false');
+      chip.addEventListener('click', function () {
+        tempoSelecionado = chip.getAttribute('data-valor');
+        box.querySelectorAll('.nw-chip').forEach(function (c) {
+          var ativo = c === chip;
+          c.classList.toggle('is-active', ativo);
+          c.setAttribute('aria-checked', ativo ? 'true' : 'false');
+        });
+      });
+    });
+
+    setTimeout(function () { nomeInput.focus(); }, 50);
+
+    function escFecha(e) { if (e.key === 'Escape') fecha(); }
     function fecha() {
+      document.removeEventListener('keydown', escFecha);
       overlay.remove();
     }
 
     cancelarBtn.addEventListener('click', fecha);
     overlay.addEventListener('click', function (e) { if (e.target === overlay) fecha(); });
-    document.addEventListener('keydown', function escFecha(e) {
-      if (e.key === 'Escape') { fecha(); document.removeEventListener('keydown', escFecha); }
-    });
+    document.addEventListener('keydown', escFecha);
 
     enviarBtn.addEventListener('click', function () {
       var nome = (nomeInput.value || '').trim();
       var email = (emailInput.value || '').trim();
       var telefone = (telInput.value || '').trim();
+      var metragem = (metragemInput.value || '').trim();
+      var tempo = tempoSelecionado;
 
-      if (!nome || !email || !telefone) {
-        erroEl.textContent = 'Preencha nome, e-mail e telefone pra continuar.';
+      if (!nome || !email || !telefone || !metragem) {
+        erroEl.textContent = 'Preencha nome, e-mail, WhatsApp e metragem pra continuar.';
         return;
       }
       if (!nosettePhoneDigits(telefone)) {
         erroEl.textContent = 'Telefone inválido. Digite DDD + celular (ex.: 11998765432).';
         return;
       }
+      if (!tempo) {
+        erroEl.textContent = 'Selecione o tempo do projeto.';
+        return;
+      }
       erroEl.textContent = '';
       enviarBtn.disabled = true;
-      enviarBtn.textContent = 'Enviando…';
+      enviarTxt.textContent = 'Enviando…';
 
       var eventId = nosetteEventId();
-      var lead = { nome: nome, email: email, telefone: telefone, _eventId: eventId };
+      var lead = { nome: nome, email: email, telefone: telefone, urgencia: tempo, metragem: metragem, _eventId: eventId };
+      var mensagem = nosetteWhatsappMensagem(tempo, metragem);
 
       nosetteEnviaRd(Object.assign({
         token_rdstation: NOSETTE_RD_TOKEN,
         identificador: NOSETTE_RD_FUNIL_IDENTIFICADOR_WHATSAPP,
         email: email,
         nome: nome,
-        mobile_phone: nosetteNormalizePhoneMeta(telefone)
+        mobile_phone: nosetteNormalizePhoneMeta(telefone),
+        // Mesmos campos Nosette do form de orçamento (ver seção 5).
+        cf_nosette_urgencia_da_obra: tempo,
+        cf_nosette_metragem_do_projeto: metragem
       }, nosetteUtmPayload()))
       .then(function (r) {
         return r.json().then(function (data) {
@@ -626,7 +717,7 @@ document.addEventListener('click', function (e) {
           nosettePushLead(NOSETTE_RD_FUNIL_IDENTIFICADOR_WHATSAPP, lead, 'whatsapp_lead_submit');
           nosetteWhatsappPushEvento();          // + whatsapp_click (intenção)
           fecha();
-          window.open(nosetteWhatsappLink(NOSETTE_WHATSAPP_MSG_PADRAO), '_blank', 'noopener');
+          window.open(nosetteWhatsappLink(mensagem), '_blank', 'noopener');
         });
       })
       .catch(function (err) {
@@ -638,7 +729,7 @@ document.addEventListener('click', function (e) {
         // não temos garantia do lead.
         nosetteWhatsappPushEvento();
         fecha();
-        window.open(nosetteWhatsappLink(NOSETTE_WHATSAPP_MSG_PADRAO), '_blank', 'noopener');
+        window.open(nosetteWhatsappLink(mensagem), '_blank', 'noopener');
       });
     });
   }
@@ -649,4 +740,25 @@ document.addEventListener('click', function (e) {
     e.preventDefault();
     nosetteCriaModalWhatsapp(link.getAttribute('href'));
   }, true);
+})();
+
+/* ─────────────────────────────────────────────────────────────────────
+   7. DELAY DO BOTÃO FLUTUANTE DO WHATSAPP — .whatsapp-float só aparece
+      depois de 60s de navegação. O tempo conta a partir da 1ª página da
+      sessão (sessionStorage), então trocar de página não reinicia o relógio.
+      O CSS que esconde o botão está no <style> do bloco 6.
+   ───────────────────────────────────────────────────────────────────── */
+(function () {
+  var DELAY_MS = 60000;
+  var KEY = 'nosette_wa_inicio';
+  var inicio = Date.now();
+  try {
+    var salvo = parseInt(sessionStorage.getItem(KEY), 10);
+    if (salvo && salvo <= inicio) inicio = salvo;
+    else sessionStorage.setItem(KEY, String(inicio));
+  } catch (e) {}
+  var restante = Math.max(0, DELAY_MS - (Date.now() - inicio));
+  setTimeout(function () {
+    document.documentElement.classList.add('nosette-wa-liberado');
+  }, restante);
 })();
