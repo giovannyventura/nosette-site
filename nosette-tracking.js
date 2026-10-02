@@ -1,7 +1,7 @@
 /**
  * nosette-tracking.js — Camada de tracking + envio de leads (Nosette Arquitetura)
  *
- * Injetar via <script defer src="/nosette-tracking.js"></script> em TODAS as páginas
+ * Injetar via <script defer src="/nosette-site/nosette-tracking.js"></script> em TODAS as páginas
  * HTML estáticas do export Next.js, logo antes de </body> (depois dos chunks _next/static).
  *
  * Site é um export estático Next.js com hidratação client-side — os componentes React

@@ -1,3 +1,3 @@
-:HL["/_next/static/chunks/06fzc3e3vnk6v.css","style"]
+:HL["/nosette-site/_next/static/chunks/06fzc3e3vnk6v.css","style"]
 :HL["https://api.fontshare.com/v2/css?f[]=general-sans@400,500&display=swap","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"/_not-found","param":null,"prefetchHints":4192,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}}}},"staleTime":300,"buildId":"WHCwGg8Zx0KXCT1BBKx9I"}
+0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"/nosette-site/_not-found","param":null,"prefetchHints":4192,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}}}},"staleTime":300,"buildId":"WHCwGg8Zx0KXCT1BBKx9I"}
